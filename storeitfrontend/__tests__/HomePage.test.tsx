@@ -1,13 +1,13 @@
+import { FilesRender } from "../test-utils";
 import { screen, waitForElementToBeRemoved } from "@testing-library/react";
 import HomePage from "../components/HomePage";
 import "@testing-library/jest-dom";
 
-// Mock next/navigation
+// Mock useParams
 jest.mock("next/navigation", () => ({
-  useParams: jest.fn(() => {
-    return { pageName: "" };
-  }),
+  useParams: jest.fn().mockReturnValue({ pageName: "" }),
 }));
+import { useParams } from "next/navigation";
 
 // Mock constants
 jest.mock("../constants/index", () => ({
@@ -15,16 +15,13 @@ jest.mock("../constants/index", () => ({
 }));
 
 // Mock all utils
-jest.mock("../lib/utils", () => ({
-  calculatePercentage: jest.fn(),
-  calculateTotalFileSize: jest.fn(),
-  convertFileSize: jest.fn(),
-  filterFilesAccordingToParams: jest.fn((_, files) => files),
-  isValidPageName: jest.fn(),
-  titleCase: jest.fn(),
-  saveLoggedInUserToLocalStorage: jest.fn(),
-}));
-import { FilesRender } from "../test-utils";
+jest.mock("../lib/utils", () => {
+  const actual = jest.requireActual("../lib/utils");
+  return {
+    ...actual,
+    filterFilesAccordingToParams: jest.fn((_, files) => files),
+  };
+});
 
 // Stub out child components
 jest.mock(
@@ -57,7 +54,12 @@ jest.mock(
 );
 
 describe("HomePage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
   test("Show loading, then show HomPage with 2 file cards and Dashboard title", async () => {
+    (useParams as jest.Mock).mockReturnValue({ pageName: "" });
+
     FilesRender(<HomePage />);
 
     const loader = await screen.findByTestId("loading");
@@ -68,5 +70,18 @@ describe("HomePage", () => {
     expect(await screen.findByTestId("home")).toBeInTheDocument();
     expect(await screen.findByText("Dashboard")).toBeInTheDocument();
     expect(await screen.findAllByTestId("card")).toHaveLength(2);
+  });
+  test("Show Media when pageName is media", async () => {
+    (useParams as jest.Mock).mockReturnValue({ pageName: "media" });
+
+    FilesRender(<HomePage />);
+
+    const loader = await screen.findByTestId("loading");
+    expect(loader).toBeInTheDocument();
+
+    await waitForElementToBeRemoved(() => screen.queryByTestId("loading"));
+
+    expect(await screen.findByTestId("home")).toBeInTheDocument();
+    expect(await screen.findByText("Media")).toBeInTheDocument();
   });
 });

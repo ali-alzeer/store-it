@@ -36,7 +36,10 @@ export default function HomePage() {
     <>
       {isLoading ? (
         <>
-          <div className="bg-gray-200 p-5 rounded-4xl h-full overflow-hidden">
+          <div
+            data-testid="loading"
+            className="bg-gray-200 p-5 rounded-4xl h-full overflow-hidden"
+          >
             <div className="w-full h-full flex flex-col justify-center items-center gap-3 bg-gray-200">
               <div className="w-20 h-20 border-4 border-transparent border-t-brand animate-spin rounded-full"></div>
             </div>
@@ -44,7 +47,10 @@ export default function HomePage() {
         </>
       ) : (
         <>
-          <div className="bg-gray-200 p-5 rounded-4xl h-full overflow-hidden">
+          <div
+            data-testid="home"
+            className="bg-gray-200 p-5 rounded-4xl h-full overflow-hidden"
+          >
             <div className="flex flex-col justify-between items-start px-2 pb-4 gap-2">
               <h1 className="h1 text-black">
                 {params.pageName && isValidPageName(params.pageName.toString())

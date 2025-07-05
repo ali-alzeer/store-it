@@ -1,0 +1,229 @@
+// __tests__/HomePage.test.tsx
+import React from "react";
+import { render, screen, act, waitFor } from "@testing-library/react";
+import HomePage from "../app/(root)/page";
+import { FilesContext } from "../contexts/FilesContext";
+
+// Mock next/navigation
+jest.mock("next/navigation", () => ({
+  useParams: jest.fn(),
+}));
+import { useParams } from "next/navigation";
+
+// Mock constants
+jest.mock("../constants/index", () => ({
+  MAX_CAPACITY_SIZE_FOR_USER: 104857600,
+}));
+
+// Mock all utils
+jest.mock("../lib/utils", () => ({
+  calculatePercentage: jest.fn(),
+  calculateTotalFileSize: jest.fn(),
+  convertFileSize: jest.fn(),
+  filterFilesAccordingToParams: jest.fn(),
+  isValidPageName: jest.fn(),
+  titleCase: jest.fn(),
+}));
+import {
+  calculatePercentage,
+  calculateTotalFileSize,
+  convertFileSize,
+  filterFilesAccordingToParams,
+  isValidPageName,
+  titleCase,
+} from "../lib/utils";
+
+// Stub out child components
+jest.mock(
+  "../components/Sort",
+  () =>
+    function Sort() {
+      return <div data-testid="sort">Sort Component</div>;
+    }
+);
+jest.mock(
+  "../components/Card",
+  () =>
+    function Card({ file }: { file: UserFileDto }) {
+      return <div data-testid="card">Sort Component {file.fileName}</div>;
+    }
+);
+jest.mock(
+  "../components/ui/progress-11",
+  () =>
+    function Progress11() {
+      return <div>CircleProgress</div>;
+    }
+);
+jest.mock(
+  "../components/ui/progress-02",
+  () =>
+    function Progress02() {
+      return <div>LinearProgress</div>;
+    }
+);
+
+describe("HomePage", () => {
+  const files: UserFileDto[] = [
+    {
+      fileId: "1",
+      fileName: "one.txt",
+      url: "/one",
+      typeId: "t1",
+      fileTypeName: "text",
+      extensionId: "e1",
+      fileExtensionName: ".txt",
+      size: 200,
+      createdAt: new Date(),
+      ownerId: "u1",
+      ownerFirstName: "Alice",
+      ownerLastName: "A.",
+      ownerImageUrl: "/img1",
+    },
+    {
+      fileId: "2",
+      fileName: "two.txt",
+      url: "/two",
+      typeId: "t1",
+      fileTypeName: "text",
+      extensionId: "e1",
+      fileExtensionName: ".txt",
+      size: 300,
+      createdAt: new Date(),
+      ownerId: "u1",
+      ownerFirstName: "Alice",
+      ownerLastName: "A.",
+      ownerImageUrl: "/img1",
+    },
+  ];
+
+  const renderWithContext = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    params: Record<string, any>,
+    ctxFiles: UserFileDto[] | null = files,
+    notification = {}
+  ) => {
+    // mock useParams return
+    (useParams as jest.Mock).mockReturnValue(params);
+
+    // context wrapper
+    return render(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      <FilesContext.Provider value={{ files: ctxFiles, notification } as any}>
+        <HomePage />
+      </FilesContext.Provider>
+    );
+  };
+
+  beforeAll(() => {
+    jest.useFakeTimers();
+  });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // sensible defaults for utils
+    (filterFilesAccordingToParams as jest.Mock).mockReturnValue(files);
+    (calculateTotalFileSize as jest.Mock).mockReturnValue(500);
+    (convertFileSize as jest.Mock).mockImplementation((n) => `${n}B`);
+    (calculatePercentage as jest.Mock).mockReturnValue(50);
+    (isValidPageName as jest.Mock).mockReturnValue(false);
+    (titleCase as jest.Mock).mockImplementation(
+      (s) => s.charAt(0).toUpperCase() + s.slice(1)
+    );
+    // Default window width
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 1200,
+    });
+    jest.useFakeTimers();
+  });
+  it("shows loading spinner then content after timeout", async () => {
+    // 1. Include a real files array in your context
+
+    renderWithContext({ files: files, pageName: undefined });
+
+    // 2. Wait for useEffect to set isLoading=true
+    const spinner = await screen.findByTestId("loading");
+    expect(spinner).toBeTruthy();
+
+    // 3. Advance the 200 ms timer
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+
+    // 4. Wait for spinner to be removed
+    await waitFor(() => expect(screen.queryByTestId("loading")).toBeNull());
+    // 5. Finally, your content shows
+    expect(screen.getByText("Dashboard")).toBeTruthy();
+  });
+
+  it("renders titleCase when pageName is not valid or empty string", async () => {
+    (isValidPageName as jest.Mock).mockReturnValue(true);
+    renderWithContext({ pageName: "" });
+
+    // Spinner mount and teardown
+    act(() => jest.advanceTimersByTime(200));
+
+    expect(titleCase).toHaveBeenCalledTimes(0);
+    expect(screen.getByText("Dashboard")).toBeTruthy();
+  });
+
+  it("renders titleCase when pageName is valid", async () => {
+    (isValidPageName as jest.Mock).mockReturnValue(true);
+    renderWithContext({ pageName: "media" });
+
+    // Spinner mount and teardown
+    act(() => jest.advanceTimersByTime(200));
+
+    expect(titleCase).toHaveBeenCalledTimes(2);
+    expect(screen.getByText("Media")).toBeTruthy();
+  });
+
+  it("shows capacity bar when pageName is not in filter list", async () => {
+    renderWithContext({ pageName: undefined });
+
+    act(() => jest.advanceTimersByTime(200));
+
+    // We've set calculateTotalFileSize to 500, convertFileSize "500B", MAX 1000
+    expect(screen.findByText("104857600")).toBeTruthy();
+
+    // window.innerWidth > 1024 → LinearProgress
+    expect(screen.getByText("LinearProgress")).toBeTruthy();
+    expect(screen.queryByText("CircleProgress")).toBeNull();
+  });
+
+  it("falls back to circular progress on small screens", async () => {
+    Object.defineProperty(window, "innerWidth", {
+      writable: true,
+      configurable: true,
+      value: 800,
+    });
+    renderWithContext({ pageName: undefined });
+
+    act(() => jest.advanceTimersByTime(200));
+
+    expect(screen.getByText("CircleProgress")).toBeTruthy();
+    expect(screen.queryByText("LinearProgress")).toBeNull();
+  });
+
+  it("renders empty state when files is null or empty", async () => {
+    renderWithContext({ pageName: undefined }, []);
+    act(() => jest.advanceTimersByTime(200));
+
+    expect(screen.getByText(/The only storage solution you need/)).toBeTruthy();
+
+    // No cards rendered
+    expect(screen.queryByTestId("card")).toBeNull();
+  });
+
+  it("renders one Card per filtered file", async () => {
+    // filterFilesAccordingToParams returns full files array
+    renderWithContext({ pageName: "media" }, files);
+
+    act(() => jest.advanceTimersByTime(200));
+
+    const cards = screen.getAllByTestId("card");
+    expect(cards).toHaveLength(files.length);
+  });
+});

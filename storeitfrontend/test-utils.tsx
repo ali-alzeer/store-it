@@ -29,7 +29,7 @@ const AuthProviderWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const AuthRender = (
+const renderWithAuthContext = (
   ui: ReactElement,
   options?: Omit<RenderOptions, "wrapper">
 ) => render(ui, { wrapper: AuthProviderWrapper, ...options });
@@ -42,7 +42,7 @@ const UnAuthProviderWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const UnAuthRender = (
+const renderWithUnAuthContext = (
   ui: ReactElement,
   options?: Omit<RenderOptions, "wrapper">
 ) => render(ui, { wrapper: UnAuthProviderWrapper, ...options });
@@ -94,10 +94,14 @@ const FilesProviderWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const FilesRender = (
+const renderWithFilesContext = (
   ui: ReactElement,
   options?: Omit<RenderOptions, "wrapper">
 ) => render(ui, { wrapper: FilesProviderWrapper, ...options });
 
 export * from "@testing-library/react";
-export { FilesRender, AuthRender, UnAuthRender };
+export {
+  renderWithAuthContext,
+  renderWithUnAuthContext,
+  renderWithFilesContext,
+};

@@ -1,4 +1,4 @@
-import { FilesRender } from "../test-utils";
+import { renderWithFilesContext } from "../test-utils";
 import { screen, waitForElementToBeRemoved } from "@testing-library/react";
 import HomePage from "../components/HomePage";
 import "@testing-library/jest-dom";
@@ -8,11 +8,6 @@ jest.mock("next/navigation", () => ({
   useParams: jest.fn().mockReturnValue({ pageName: "" }),
 }));
 import { useParams } from "next/navigation";
-
-// Mock constants
-jest.mock("../constants/index", () => ({
-  MAX_CAPACITY_SIZE_FOR_USER: 104857600,
-}));
 
 // Mock all utils
 jest.mock("../lib/utils", () => {
@@ -60,7 +55,7 @@ describe("HomePage", () => {
   test("Show loading, then show HomPage with 2 file cards and Dashboard title", async () => {
     (useParams as jest.Mock).mockReturnValue({ pageName: "" });
 
-    FilesRender(<HomePage />);
+    renderWithFilesContext(<HomePage />);
 
     const loader = await screen.findByTestId("loading");
     expect(loader).toBeInTheDocument();
@@ -74,7 +69,7 @@ describe("HomePage", () => {
   test("Show Media when pageName is media", async () => {
     (useParams as jest.Mock).mockReturnValue({ pageName: "media" });
 
-    FilesRender(<HomePage />);
+    renderWithFilesContext(<HomePage />);
 
     const loader = await screen.findByTestId("loading");
     expect(loader).toBeInTheDocument();

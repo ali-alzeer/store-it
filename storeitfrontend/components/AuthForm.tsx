@@ -18,7 +18,6 @@ import { useContext, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { createAccount, signInUser } from "../lib/actions/user.actions";
-// import { useRouter } from "next/router";
 import { AuthContext } from "../contexts/AuthContext";
 import { saveLoggedInUserToLocalStorage } from "../lib/utils";
 import { redirect } from "next/navigation";
@@ -214,6 +213,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
               {isLoading && (
                 <Image
+                  data-testid="loader"
                   src="/assets/icons/loader.svg"
                   alt="loader"
                   width={24}
@@ -224,7 +224,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
             </Button>
 
             {errorMessage !== "" ? (
-              <p className="error-message">*{errorMessage}</p>
+              <p data-testid="error" className="error-message">
+                *{errorMessage}
+              </p>
             ) : null}
 
             <div className="body-2 flex justify-center">

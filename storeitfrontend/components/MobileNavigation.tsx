@@ -65,12 +65,15 @@ const MobileNavigation = () => {
         <SheetTrigger>
           <Image
             src="/assets/icons/menu.svg"
-            alt="Search"
+            alt="menu"
             width={30}
             height={30}
           />
         </SheetTrigger>
-        <SheetContent className="shad-sheet h-screen px-3">
+        <SheetContent
+          aria-describedby={undefined}
+          className="shad-sheet h-screen px-3"
+        >
           <SheetTitle>
             <UserDetails renderUserDetails={() => renderUserDetails(user)} />
             <Separator className="mb-4 bg-light-200/20" />
@@ -114,6 +117,7 @@ const MobileNavigation = () => {
           <div className="flex flex-col justify-between gap-5 pb-5">
             <FileUploader user={user} />
             <Button
+              data-testid="signOutButton"
               type="submit"
               className="mobile-sign-out-button text-start flex justify-start"
               onClick={async () => {

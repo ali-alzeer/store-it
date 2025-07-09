@@ -57,8 +57,6 @@ const ActionDropDown = ({ file }: { file: UserFileDto }) => {
   };
 
   const handleAction = async () => {
-    console.log(action);
-
     if (!action) return;
     if (!user) return;
     if (action.value === "share") {
@@ -148,7 +146,8 @@ const ActionDropDown = ({ file }: { file: UserFileDto }) => {
       const a = document.createElement("a");
       a.style.display = "none";
       a.href = url;
-      a.setAttribute("download", file.fileName); // specify the file name
+      a.setAttribute("download", file.fileName);
+      a.setAttribute("id", "downloadAnchor");
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -198,13 +197,20 @@ const ActionDropDown = ({ file }: { file: UserFileDto }) => {
     const { value, label } = action;
 
     return (
-      <DialogContent className="shad-dialog button">
+      <DialogContent
+        aria-describedby={undefined}
+        className="shad-dialog button"
+      >
         <DialogHeader className="flex flex-col gap-3">
-          <DialogTitle className="text-center text-light-100">
+          <DialogTitle
+            data-testid="dialogTitle"
+            className="text-center text-light-100"
+          >
             {label}
           </DialogTitle>
           {value === "rename" && (
             <Input
+              data-testid="renameInput"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -245,6 +251,7 @@ const ActionDropDown = ({ file }: { file: UserFileDto }) => {
               Cancel
             </Button>
             <Button
+              data-testid="submitButton"
               disabled={isLoading}
               onClick={handleAction}
               className="modal-submit-button"
@@ -269,7 +276,10 @@ const ActionDropDown = ({ file }: { file: UserFileDto }) => {
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModelOpen}>
       <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-        <DropdownMenuTrigger className="shad-no-focus">
+        <DropdownMenuTrigger
+          data-testid="dropDownTrigger"
+          className="shad-no-focus"
+        >
           <div className="relative cursor-pointer p-5 flex flex-col justify-center items-center gap-1">
             <div className="absolute top-1 right-1 flex flex-col justify-center items-center gap-1">
               <div className="w-1 h-1 border-[1px] border-gray-500 rounded-full"></div>
@@ -290,6 +300,7 @@ const ActionDropDown = ({ file }: { file: UserFileDto }) => {
 
             return (
               <DropdownMenuItem
+                data-testid="dropDownItem"
                 key={actionItem.value}
                 className="shad-dropdown-item"
                 onClick={() => {

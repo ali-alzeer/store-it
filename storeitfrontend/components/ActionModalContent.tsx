@@ -146,6 +146,7 @@ export const ShareInput = ({
               Share file with other users
             </p>
             <Input
+              data-testid="shareInput"
               type="email"
               placeholder="ex1@ex1.com , ex2@ex2.com ..."
               onChange={(e) => onInputChange(e.target.value.trim().split(","))}

@@ -193,7 +193,10 @@ const UserDetails = ({
     if (!user) return;
 
     return (
-      <DialogContent className="shad-dialog button">
+      <DialogContent
+        aria-describedby={undefined}
+        className="shad-dialog button"
+      >
         <DialogHeader className="flex flex-col gap-3">
           <DialogTitle className="text-center text-light-100">
             User Details
@@ -221,10 +224,12 @@ const UserDetails = ({
                 <User2Icon className="w-20 h-20" />
               )}
               <div
+                data-testid="changeImageButton"
                 onClick={() => imageInputRef.current?.click()}
                 className="cursor-pointer absolute bottom-0 right-0 rounded-full bg-brand w-10 h-10 flex justify-center items-center"
               >
                 <Input
+                  data-testid="imageInput"
                   type="file"
                   className="hidden"
                   accept=".jpg,.jpeg,.png,.gif,.bmp,.svg,.webp"
@@ -235,6 +240,7 @@ const UserDetails = ({
               </div>
               {user.imageUrl ? (
                 <div
+                  data-testid="deleteImageButton"
                   onClick={handleDeleteImage}
                   className="cursor-pointer absolute bottom-0 left-0 rounded-full bg-error w-10 h-10 flex justify-center items-center"
                 >
@@ -256,6 +262,7 @@ const UserDetails = ({
               </div>
 
               <div
+                data-testid="changeNameTrigger"
                 onClick={() => setIsEditName(!isEditName)}
                 className="cursor-pointer bg-brand text-white p-3 flex justify-center items-center"
               >
@@ -295,6 +302,7 @@ const UserDetails = ({
                       Cancel
                     </Button>
                     <Button
+                      data-testid="changeNameButton"
                       disabled={isLoading}
                       className="modal-submit-button"
                       onClick={handleChangeName}
@@ -315,6 +323,7 @@ const UserDetails = ({
               ) : null}
 
               <div
+                data-testid="deleteAccountTrigger"
                 onClick={() => setIsDeleteAccount(!isDeleteAccount)}
                 className="cursor-pointer bg-brand text-white p-3 flex justify-center items-center"
               >
@@ -350,6 +359,7 @@ const UserDetails = ({
                       Cancel
                     </Button>
                     <Button
+                      data-testid="deleteAccountButton"
                       disabled={isLoading}
                       className="modal-submit-button bg-error"
                       onClick={handleDeleteAccount}

@@ -74,16 +74,12 @@ describe("AuthForm — Sign In", () => {
   test("submits successfully and redirects", async () => {
     const mockUser: User = {
       id: "550e8400-e29b-41d4-a716-446655440000",
-      firstName: "Amina",
-      lastName: "Haddad",
-      email: "amina.haddad@example.com",
-      imageUrl: "https://example.com/avatars/amina-haddad.png",
+      firstName: "Ali",
+      lastName: "Alzeer",
+      email: "ali.alzeer@example.com",
+      imageUrl: "",
       createdAt: new Date("2025-07-05T08:30:00Z"),
-      jwt: [
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-        "eyJ1c2VySWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJpYXQiOjE2ODY5ODQ4MDB9",
-        "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
-      ].join("."),
+      jwt: "",
     };
     (signInUser as jest.Mock).mockResolvedValue({
       user: mockUser,
@@ -93,7 +89,7 @@ describe("AuthForm — Sign In", () => {
     renderWithUnAuthContext(<AuthForm type="sign-in" />);
 
     fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: "amina@haddad.com" },
+      target: { value: "ali@alzeer.com" },
     });
     fireEvent.input(screen.getByPlaceholderText("Enter your password"), {
       target: { value: "password123" },
@@ -104,7 +100,7 @@ describe("AuthForm — Sign In", () => {
 
     await waitFor(() => {
       expect(signInUser).toHaveBeenCalledWith({
-        email: "amina@haddad.com",
+        email: "ali@alzeer.com",
         password: "password123",
       });
       expect(saveLoggedInUserToLocalStorage).toHaveBeenCalledWith(mockUser);
@@ -170,16 +166,12 @@ describe("AuthForm — Sign Up", () => {
   test("submits sign-up and calls createAccount", async () => {
     const newUser = {
       id: "550e8400-e29b-41d4-a716-446655440000",
-      firstName: "Amina",
-      lastName: "Haddad",
-      email: "amina.haddad@example.com",
-      imageUrl: "https://example.com/avatars/amina-haddad.png",
+      firstName: "Ali",
+      lastName: "Alzeer",
+      email: "ali.alzeer@example.com",
+      imageUrl: "",
       createdAt: new Date("2025-07-05T08:30:00Z"),
-      jwt: [
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-        "eyJ1c2VySWQiOiI1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDAiLCJpYXQiOjE2ODY5ODQ4MDB9",
-        "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
-      ].join("."),
+      jwt: "",
     };
     (createAccount as jest.Mock).mockResolvedValue({
       user: newUser,
@@ -189,13 +181,13 @@ describe("AuthForm — Sign Up", () => {
     renderWithUnAuthContext(<AuthForm type="sign-up" />);
 
     fireEvent.input(screen.getByLabelText(/first name/i), {
-      target: { value: "Amina" },
+      target: { value: "Ali" },
     });
     fireEvent.input(screen.getByLabelText(/last name/i), {
-      target: { value: "Haddad" },
+      target: { value: "Alzeer" },
     });
     fireEvent.input(screen.getByLabelText(/email/i), {
-      target: { value: "amina.haddad@example.com" },
+      target: { value: "ali.alzeer@example.com" },
     });
     fireEvent.input(screen.getByPlaceholderText("Enter your password"), {
       target: { value: "securePass1" },
@@ -205,9 +197,9 @@ describe("AuthForm — Sign Up", () => {
 
     await waitFor(() => {
       expect(createAccount).toHaveBeenCalledWith({
-        firstName: "Amina",
-        lastName: "Haddad",
-        email: "amina.haddad@example.com",
+        firstName: "Ali",
+        lastName: "Alzeer",
+        email: "ali.alzeer@example.com",
         password: "securePass1",
       });
       expect(navigation.redirect).toHaveBeenCalledWith("/");
@@ -220,7 +212,7 @@ describe("AuthForm — Redirect when already logged in", () => {
     jest.clearAllMocks();
   });
 
-  it("immediately redirects if user context is non-null", () => {
+  test("immediately redirects if user context is non-null", () => {
     renderWithAuthContext(<AuthForm type="sign-in" />);
 
     expect(navigation.redirect).toHaveBeenCalledWith("/");

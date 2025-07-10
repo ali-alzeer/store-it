@@ -20,6 +20,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using storeitbackend.Dtos.File;
 using storeitbackend.Dtos.Account;
+using storeitbackend.Interfaces;
 
 namespace storeitbackend.Controllers
 {
@@ -30,10 +31,10 @@ namespace storeitbackend.Controllers
     private readonly Cloudinary _cloudinary;
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
-    private readonly FileService _fileService;
+    private readonly IFileService _fileService;
     private readonly JWTService _jwtService;
 
-    public FileController(Cloudinary cloudinary, AppDbContext context, IConfiguration configuration, FileService fileService, JWTService jwtService)
+    public FileController(Cloudinary cloudinary, AppDbContext context, IConfiguration configuration, IFileService fileService, JWTService jwtService)
     {
       _cloudinary = cloudinary;
       _context = context;
@@ -72,7 +73,7 @@ namespace storeitbackend.Controllers
 
 
       string userId = _jwtService.ExtractUserIdFromJwt(token);
-      FileTypeResult FileTypeResultObject = FileService.GetFileType(file.FileName);
+      FileTypeResult FileTypeResultObject = _fileService.GetFileType(file.FileName);
       var filesExistsInDb = _context.Files.Where(f => f.Name == Path.GetFileName(file.FileName) && f.Type.Name.ToLower() == FileTypeResultObject.Type.ToLower() && f.Extension.Name.ToLower() == FileTypeResultObject.Extension.ToLower());
 
       if (filesExistsInDb.Count() > 0)
@@ -294,7 +295,7 @@ namespace storeitbackend.Controllers
       }
 
       // Extracting public Id and resource type
-      string publicIdWithoutExtension = FileService.ExtractPublicId(fileDeletionBackendDto.FileUrl);
+      string publicIdWithoutExtension = _fileService.ExtractPublicId(fileDeletionBackendDto.FileUrl);
 
       if (publicIdWithoutExtension == null)
       {
@@ -309,7 +310,7 @@ namespace storeitbackend.Controllers
       }
 
 
-      FileTypeResult FileTypeResultObject = FileService.GetFileType(fileFromDb.Name);
+      FileTypeResult FileTypeResultObject = _fileService.GetFileType(fileFromDb.Name);
       ResourceType resourceType = ResourceType.Auto;
       string publicId = "";
 

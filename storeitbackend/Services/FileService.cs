@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using storeitbackend.Data;
 using storeitbackend.Dtos.Account;
 using storeitbackend.Dtos.File;
+using storeitbackend.Interfaces;
 using storeitbackend.Models;
 
 namespace storeitbackend.Services
@@ -22,7 +23,7 @@ namespace storeitbackend.Services
     public string Extension { get; set; } = "";
   }
 
-  public class FileService
+  public class FileService : IFileService
   {
     private readonly AppDbContext _context;
 
@@ -98,7 +99,7 @@ namespace storeitbackend.Services
     }
 
 
-    public static FileTypeResult GetFileType(string fileName)
+    public FileTypeResult GetFileType(string fileName)
     {
       if (string.IsNullOrWhiteSpace(fileName))
       {
@@ -356,7 +357,7 @@ namespace storeitbackend.Services
     }
 
 
-    public static string? ExtractPublicId(string url)
+    public string? ExtractPublicId(string url)
     {
       // Remove any query parameters.
       string cleanUrl = url.Split('?')[0];

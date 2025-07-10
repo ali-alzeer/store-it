@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using storeitbackend.Data;
 using storeitbackend.Dtos.Account;
+using storeitbackend.Interfaces;
 using storeitbackend.Models;
 using storeitbackend.Services;
 
@@ -28,12 +29,14 @@ namespace storeitbackend.Controllers
   {
     private readonly UserManager<User> _userManager;
     private readonly SignInManager<User> _signInManager;
-    private readonly JWTService _jwtService;
+    private readonly IJWTService _jwtService;
+    private readonly IFileService _fileService;
     private readonly AppDbContext _context;
     private readonly Cloudinary _cloudinary;
-    public AccountController(Cloudinary cloudinary, AppDbContext context, JWTService jwtService, SignInManager<User> signInManager, UserManager<User> userManager)
+    public AccountController(Cloudinary cloudinary, AppDbContext context, IJWTService jwtService, IFileService fileService, SignInManager<User> signInManager, UserManager<User> userManager)
     {
       _jwtService = jwtService;
+      _fileService = fileService;
       _userManager = userManager;
       _signInManager = signInManager;
       _context = context;
@@ -148,13 +151,13 @@ namespace storeitbackend.Controllers
 
       if (image.Length == 0) return Problem(detail: "Image file is empty", statusCode: StatusCodes.Status400BadRequest);
 
-      if (FileService.GetFileType(image.FileName).Type != "image") return Problem(detail: "Unsupported media type", statusCode: StatusCodes.Status415UnsupportedMediaType);
+      if (_fileService.GetFileType(image.FileName).Type != "image") return Problem(detail: "Unsupported media type", statusCode: StatusCodes.Status415UnsupportedMediaType);
 
       if (user.ImageUrl != null)
       {
 
         //Remove image before uploading new one
-        string publicIdWithoutExtension = FileService.ExtractPublicId(user.ImageUrl);
+        string publicIdWithoutExtension = _fileService.ExtractPublicId(user.ImageUrl);
 
         var deletionParams = new DeletionParams(publicIdWithoutExtension)
         {
@@ -238,7 +241,7 @@ namespace storeitbackend.Controllers
       if (user.ImageUrl.ToLower() != imageDeleteDto.ImageUrl.ToLower()) return Problem(detail: "ImageUrl does not match user imageUrl", statusCode: StatusCodes.Status400BadRequest);
 
       //Remove image before uploading new one
-      string publicIdWithoutExtension = FileService.ExtractPublicId(user.ImageUrl);
+      string publicIdWithoutExtension = _fileService.ExtractPublicId(user.ImageUrl);
 
       var deletionParams = new DeletionParams(publicIdWithoutExtension)
       {
@@ -356,15 +359,15 @@ namespace storeitbackend.Controllers
           if (filesToDelete[i] != null)
           {
             ResourceType resourceType = ResourceType.Auto;
-            var fileTypeExtension = FileService.GetFileType(filesToDelete[i].Name);
+            var fileTypeExtension = _fileService.GetFileType(filesToDelete[i].Name);
             if (fileTypeExtension.Type == "image")
             {
-              publicIds[i] = FileService.ExtractPublicId(filesToDelete[i].Url);
+              publicIds[i] = _fileService.ExtractPublicId(filesToDelete[i].Url);
               resourceType = ResourceType.Image;
             }
             else
             {
-              publicIds[i] = $"{FileService.ExtractPublicId(filesToDelete[i].Url)}.{fileTypeExtension.Extension}";
+              publicIds[i] = $"{_fileService.ExtractPublicId(filesToDelete[i].Url)}.{fileTypeExtension.Extension}";
               if (fileTypeExtension.Type == "video")
               {
                 resourceType = ResourceType.Video;
@@ -426,12 +429,12 @@ namespace storeitbackend.Controllers
 
         if (user.ImageUrl != null)
         {
-          var userImageDeletionParams = new DeletionParams(FileService.ExtractPublicId(user.ImageUrl))
+          var userImageDeletionParams = new DeletionParams(_fileService.ExtractPublicId(user.ImageUrl))
           {
             // purging cached versions from the CDN.
             Invalidate = true,
             ResourceType = ResourceType.Image,
-            PublicId = FileService.ExtractPublicId(user.ImageUrl),
+            PublicId = _fileService.ExtractPublicId(user.ImageUrl),
           };
 
           await _cloudinary.DestroyAsync(userImageDeletionParams);

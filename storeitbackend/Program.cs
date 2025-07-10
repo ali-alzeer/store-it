@@ -21,6 +21,7 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using storeitbackend.Data;
 using storeitbackend.Exceptions;
+using storeitbackend.Interfaces;
 using storeitbackend.Models;
 using storeitbackend.Services;
 
@@ -48,8 +49,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
   options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
 });
 
-builder.Services.AddScoped<JWTService>();
-builder.Services.AddScoped<FileService>();
+builder.Services.AddScoped<IJWTService, JWTService>();
+builder.Services.AddScoped<IFileService, FileService>();
 
 builder.Services.AddIdentityCore<User>(options =>
 {

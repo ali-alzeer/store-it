@@ -10,11 +10,12 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using storeitbackend.Dtos.Account;
+using storeitbackend.Interfaces;
 using storeitbackend.Models;
 
 namespace storeitbackend.Services
 {
-  public class JWTService
+  public class JWTService : IJWTService
   {
     private readonly IConfiguration _configuration;
     private readonly SymmetricSecurityKey _jwtKey;

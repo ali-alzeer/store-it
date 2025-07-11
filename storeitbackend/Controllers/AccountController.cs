@@ -31,9 +31,10 @@ namespace storeitbackend.Controllers
     private readonly SignInManager<User> _signInManager;
     private readonly IJWTService _jwtService;
     private readonly IFileService _fileService;
-    private readonly AppDbContext _context;
-    private readonly Cloudinary _cloudinary;
-    public AccountController(Cloudinary cloudinary, AppDbContext context, IJWTService jwtService, IFileService fileService, SignInManager<User> signInManager, UserManager<User> userManager)
+    private readonly IAppDbContext _context;
+    private readonly ICloudinary _cloudinary;
+    private readonly ICloudinaryExtensionService _cloudinaryExtensionService;
+    public AccountController(ICloudinary cloudinary, ICloudinaryExtensionService cloudinaryExtensionService, IAppDbContext context, IJWTService jwtService, IFileService fileService, SignInManager<User> signInManager, UserManager<User> userManager)
     {
       _jwtService = jwtService;
       _fileService = fileService;
@@ -41,6 +42,7 @@ namespace storeitbackend.Controllers
       _signInManager = signInManager;
       _context = context;
       _cloudinary = cloudinary;
+      _cloudinaryExtensionService = cloudinaryExtensionService;
     }
 
     [HttpPost("sign-in")]
@@ -87,7 +89,6 @@ namespace storeitbackend.Controllers
       };
 
       var result = await _userManager.CreateAsync(user, signUpDto.Password);
-
       if (!result.Succeeded) return Problem(detail: "Unknown error occurred", statusCode: StatusCodes.Status400BadRequest, extensions: ConvertErrorsToDictionary(result.Errors));
 
       return Ok(new { detail = "Account created successfully" });
@@ -381,11 +382,7 @@ namespace storeitbackend.Controllers
             }
 
             // Search for the asset
-            var search = _cloudinary.Search();
-            SearchResult searchResult;
-            searchResult = search
-                  .Expression($"public_id:{publicIds[i]}")
-                  .Execute();
+            SearchResult searchResult = _cloudinaryExtensionService.ExecuteSearch($"public_id:{publicIds[i]}");
 
             if (searchResult.Resources.Count <= 0)
             {

@@ -2,6 +2,8 @@
 #nullable disable
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -11,7 +13,7 @@ using storeitbackend.Models;
 
 namespace storeitbackend.Data
 {
-  public class AppDbContext : IdentityDbContext<User>
+  public class AppDbContext : IdentityDbContext<User>, IAppDbContext
   {
     public DbSet<File> Files { get; set; }
     public DbSet<FileType> FileTypes { get; set; }
@@ -22,7 +24,9 @@ namespace storeitbackend.Data
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
-
+    public override Task<int> SaveChangesAsync(
+        CancellationToken cancellationToken = default)
+          => base.SaveChangesAsync(cancellationToken);
     protected override void OnModelCreating(ModelBuilder builder)
     {
       base.OnModelCreating(builder);

@@ -62,7 +62,7 @@ namespace storeitbackend.Services
           ValidateIssuer = true,
           ValidateAudience = false,
           ClockSkew = new TimeSpan(int.Parse(_configuration["JWT:ExpiresInDays"]), 0, 0, 0),
-          ValidateLifetime = true, // Optional: set clock skew to zero if you want exact expiration checking
+          ValidateLifetime = true,
         };
 
         tokenHandler.ValidateToken(jwt, validationParameters, out var validatedToken);
@@ -96,13 +96,20 @@ namespace storeitbackend.Services
 
     public string? ExtractUserIdFromJwt(string token)
     {
-      // Assume 'token' is the JWT string extracted from the Authorization header (after removing "Bearer ")
-      var tokenHandler = new JwtSecurityTokenHandler();
-      var jwtToken = tokenHandler.ReadJwtToken(token);
-      var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier || claim.Type == "nameid")?.Value;
+      try
+      {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var jwtToken = tokenHandler.ReadJwtToken(token);
+        var userId = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier || claim.Type == "nameid")?.Value;
+        if (userId == null) return null;
+        return userId;
+      }
+      catch
+      {
+        return null;
+      }
 
-      if (userId == null) return null;
-      return userId;
+
 
     }
   }

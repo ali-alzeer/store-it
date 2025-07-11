@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using storeitbackend.Dtos.Account;
 using storeitbackend.Dtos.File;
 using storeitbackend.Models;
@@ -20,7 +21,8 @@ namespace storeitbackend.Data
     public DbSet<FileExtension> FileExtensions { get; set; }
     public DbSet<UserFile> UsersFiles { get; set; }
     public DbSet<OwnerFile> OwnersFiles { get; set; }
-
+    public override DbSet<User> Users => base.Users;
+    public override DatabaseFacade Database => base.Database;
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }

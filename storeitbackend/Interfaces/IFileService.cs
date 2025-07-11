@@ -24,6 +24,8 @@ namespace storeitbackend.Interfaces
     List<UserFileDto>? GetUserFiles(string userId);
     List<UserFileSharedDto>? GetUsersForFileByFileId(string fileId);
     Task<int> SaveFileToDb(IFormFile file, string userId, ImageUploadResult? imageUploadResult = null, VideoUploadResult? videoUploadResult = null, RawUploadResult? rawUploadResult = null);
+    Task<bool> DeleteFileFromDb(Models.File file, OwnerFile ownerFile, UserFile userFile);
+
   }
 
 }

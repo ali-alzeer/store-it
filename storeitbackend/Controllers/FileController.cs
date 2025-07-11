@@ -28,15 +28,17 @@ namespace storeitbackend.Controllers
   [Route("api/[controller]")]
   public class FileController : ControllerBase
   {
-    private readonly Cloudinary _cloudinary;
-    private readonly AppDbContext _context;
+    private readonly ICloudinary _cloudinary;
+    private readonly ICloudinaryExtensionService _cloudinaryExtensionService;
+    private readonly IAppDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IFileService _fileService;
-    private readonly JWTService _jwtService;
+    private readonly IJWTService _jwtService;
 
-    public FileController(Cloudinary cloudinary, AppDbContext context, IConfiguration configuration, IFileService fileService, JWTService jwtService)
+    public FileController(ICloudinary cloudinary, ICloudinaryExtensionService cloudinaryExtensionService, IAppDbContext context, IConfiguration configuration, IFileService fileService, IJWTService jwtService)
     {
       _cloudinary = cloudinary;
+      _cloudinaryExtensionService = cloudinaryExtensionService;
       _context = context;
       _configuration = configuration;
       _fileService = fileService;
@@ -331,11 +333,7 @@ namespace storeitbackend.Controllers
       }
 
       // Search for the asset
-      var search = _cloudinary.Search();
-      SearchResult searchResult;
-      searchResult = search
-            .Expression($"public_id:{publicId}")
-            .Execute();
+      SearchResult searchResult = _cloudinaryExtensionService.ExecuteSearch($"public_id:{publicId}");
 
       if (searchResult.Resources.Count <= 0)
       {
@@ -359,21 +357,9 @@ namespace storeitbackend.Controllers
       }
 
       // Delete from Db
-      using (var transaction = await _context.Database.BeginTransactionAsync())
+      if (!await _fileService.DeleteFileFromDb(fileFromDb, ownerFileFromDb, userFileFromDb))
       {
-        try
-        {
-          _context.UsersFiles.Remove(userFileFromDb);
-          _context.OwnersFiles.Remove(ownerFileFromDb);
-          _context.Files.Remove(fileFromDb);
-          await _context.SaveChangesAsync();
-          await transaction.CommitAsync();
-        }
-        catch
-        {
-          await transaction.RollbackAsync();
-          return Problem(detail: "Unknown error occurred", statusCode: StatusCodes.Status400BadRequest);
-        }
+        return Problem(detail: "Unknown error occurred", statusCode: StatusCodes.Status400BadRequest);
       }
 
       return Ok(new { detail = "File deleted successfully" });
@@ -409,9 +395,9 @@ namespace storeitbackend.Controllers
         return Problem(detail: "File is not found", statusCode: StatusCodes.Status404NotFound);
       }
 
-      var userFileFromDb = await _context.UsersFiles.FirstOrDefaultAsync((uf) => (uf.FileId == fileRenameDto.FileId) && (uf.UserId == userId));
+      var ownerFileFromDb = await _context.OwnersFiles.FirstOrDefaultAsync((owf) => (owf.FileId == fileRenameDto.FileId) && (owf.UserId == userId));
 
-      if (userFileFromDb == null)
+      if (ownerFileFromDb == null)
       {
         return Problem(detail: "You can not rename this file", statusCode: StatusCodes.Status400BadRequest);
       }
@@ -557,7 +543,7 @@ namespace storeitbackend.Controllers
 
       if (userFileToRemove == null)
       {
-        return Problem(detail: "User is sharing this file", statusCode: StatusCodes.Status404NotFound);
+        return Problem(detail: "User is not sharing this file", statusCode: StatusCodes.Status404NotFound);
       }
 
       try

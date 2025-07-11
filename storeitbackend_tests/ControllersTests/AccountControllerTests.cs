@@ -641,17 +641,11 @@ namespace storeitbackend_tests.ControllersTests
 
       var ownersFilesDbSetMock = ownersFiles.AsQueryable().BuildMockDbSet();
       var filesDbSetMock = files.AsQueryable().BuildMockDbSet();
-      var ownersFilesMock = ownersFiles.AsQueryable()
-                                       .BuildMockDbSet();
-      var filesMock = files.AsQueryable()
-                                 .BuildMockDbSet();
 
       _dbContextMock.Setup(c => c.OwnersFiles)
-                   .Returns(ownersFilesMock.Object);
+                   .Returns(ownersFilesDbSetMock.Object);
       _dbContextMock.Setup(c => c.Files)
-                   .Returns(filesMock.Object);
-
-      List<OwnerFile> ownerfilesToDelete = await _dbContextMock.Object.OwnersFiles.Where(owf => owf.UserId == user.Id).ToListAsync();
+                   .Returns(filesDbSetMock.Object);
 
       var result = await _controller.DeleteAccount();
 

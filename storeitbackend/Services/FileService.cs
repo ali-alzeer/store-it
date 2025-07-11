@@ -379,6 +379,24 @@ namespace storeitbackend.Services
       return null;
     }
 
+    public async Task<bool> DeleteFileFromDb(Models.File file, OwnerFile ownerFile, UserFile userFile)
+    {
+      using var transaction = await _context.Database.BeginTransactionAsync();
+      try
+      {
+        _context.UsersFiles.Remove(userFile);
+        _context.OwnersFiles.Remove(ownerFile);
+        _context.Files.Remove(file);
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return true;
+      }
+      catch
+      {
+        await transaction.RollbackAsync();
+        return false;
+      }
+    }
   }
 
 }

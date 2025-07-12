@@ -19,6 +19,8 @@ namespace storeitbackend.Data
     DbSet<User> Users { get; set; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
     DatabaseFacade Database { get; }
+    DbSet<T> Set<T>() where T : class;
+
   }
 
 }

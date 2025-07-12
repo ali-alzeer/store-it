@@ -26,6 +26,7 @@ namespace storeitbackend.Data
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
+    public override DbSet<T> Set<T>() => base.Set<T>();
     public override Task<int> SaveChangesAsync(
         CancellationToken cancellationToken = default)
           => base.SaveChangesAsync(cancellationToken);

@@ -25,9 +25,9 @@ namespace storeitbackend.Services
 
   public class FileService : IFileService
   {
-    private readonly AppDbContext _context;
+    private readonly IAppDbContext _context;
 
-    public FileService(AppDbContext context)
+    public FileService(IAppDbContext context)
     {
       _context = context;
     }
